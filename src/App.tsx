@@ -292,16 +292,17 @@ const App = () => {
 
   // Layout Fixes
   useEffect(() => {
-    // スクロールバーのガタつきを防止するスタイル
-    document.body.style.overflowX = 'hidden'; 
-    document.body.style.width = '100%';
-    document.body.style.position = 'fixed'; 
-    document.body.style.inset = '0';
+    // スクロールバーを隠すためのグローバルスタイルを注入
+    const style = document.createElement('style');
+    style.innerHTML = `
+      ::-webkit-scrollbar { display: none; }
+      * { -ms-overflow-style: none; scrollbar-width: none; }
+      body, html { width: 100%; height: 100%; margin: 0; padding: 0; background-color: #171717; overflow: hidden; }
+    `;
+    document.head.appendChild(style);
+
     return () => {
-      document.body.style.overflowX = '';
-      document.body.style.width = '';
-      document.body.style.position = '';
-      document.body.style.inset = '';
+      document.head.removeChild(style);
     };
   }, []);
 
@@ -570,8 +571,9 @@ const App = () => {
   const btnClass = "w-full py-3 px-4 bg-[#f0e6d2] border-2 border-[#0a0a0a] text-[#0a0a0a] font-bold font-serif text-lg shadow-md hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2 uppercase tracking-wide cursor-pointer active:scale-95 select-none disabled:opacity-50 disabled:cursor-not-allowed";
 
   return (
-    <div className={`min-h-screen w-full bg-neutral-900 text-neutral-100 font-serif flex items-center justify-center relative overflow-hidden`}>
-      
+    /* 一番外側のコンテナ：ここで画面全体の中央寄せを行う */
+    <div className="fixed inset-0 w-full h-full flex items-center justify-center bg-neutral-900 font-serif text-neutral-100 overflow-hidden">
+        
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=IM+Fell+English+SC&display=swap');
         
@@ -620,41 +622,46 @@ const App = () => {
             background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
         }
         
-        /* 修正：スクロールバー領域を強制的に確保し、かつスクロールバーを常に表示することでガタつきを防止 */
-        .custom-scroll {
-          overflow-y: scroll !important; /* 常に縦スクロールバーを表示 */
-          scrollbar-gutter: stable; /* スクロールバーの幅を確保 */
+        /* スクロールバー非表示クラス */
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
         }
-        /* スクロールバーの見た目をカスタマイズ（Chrome/Safari） */
-        .custom-scroll::-webkit-scrollbar {
-          width: 8px;
-        }
-        .custom-scroll::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scroll::-webkit-scrollbar-thumb {
-          background-color: rgba(10, 10, 10, 0.2);
-          border-radius: 4px;
+        .no-scrollbar {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
         }
       `}</style>
 
-      {/* Background Layers (for PC view atmosphere) */}
+      {/* 背景装飾（PC用） */}
       <div className="absolute inset-0 z-0 opacity-30 pointer-events-none" 
            style={{ backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)", backgroundSize: "40px 40px" }}>
       </div>
 
-      {/* Main Container: レスポンシブ切り替えのキモ */}
+      {/* アプリ本体のコンテナ */}
       <div className={`
-          z-10 bg-[#f0e6d2] shadow-2xl flex flex-col border-4 border-double border-[#0a0a0a]
-          fixed inset-0 w-full h-full 
-          sm:relative sm:w-[480px] sm:h-[800px] sm:max-h-[90vh] sm:rounded-sm
+          relative z-10 
+          bg-[#f0e6d2] text-[#0a0a0a]
+          flex flex-col 
+          border-4 border-double border-[#0a0a0a] shadow-2xl
+          
+          /* Mobile: Full Screen */
+          w-full h-full
+          
+          /* Desktop/Tablet: Card Style */
+          sm:w-[480px] sm:h-[90dvh] sm:max-h-[850px] sm:rounded-lg
+          
           overflow-hidden box-border
           transition-all duration-300 ease-in-out
           ${shake ? 'animate-shake' : ''}
       `}>
         
+        {/* 背景レイヤー（アプリ内） */}
+        <div className="absolute inset-0 bg-parchment pointer-events-none z-0 opacity-100" />
+        <div className="absolute inset-0 scanline z-50 pointer-events-none opacity-20 mix-blend-overlay" />
+        <div className="absolute inset-0 vignette z-40 pointer-events-none opacity-60" />
+
         {/* Header */}
-        <div className="bg-[#0a0a0a] text-[#f0e6d2] p-2 border-b-4 border-double border-[#0a0a0a] flex justify-between items-center z-30 shadow-md shrink-0">
+        <div className="relative z-30 bg-[#0a0a0a] text-[#f0e6d2] p-2 border-b-4 border-double border-[#0a0a0a] flex justify-between items-center shadow-md shrink-0">
           <div className="font-display text-xl tracking-widest">DEPT. OF DESTINY</div>
           <div className="flex gap-4 text-sm font-bold font-mono items-center">
             <div className="flex items-center gap-1"><Star size={14} /> LUCK: {playerStats.luck}</div>
@@ -671,7 +678,7 @@ const App = () => {
         </div>
 
         {/* SVG Illustration Area */}
-        <div className="relative w-full h-48 sm:h-64 overflow-hidden border-b-4 border-black bg-[#e3dac9] group flex items-center justify-center paper-texture shrink-0">
+        <div className="relative z-10 w-full h-48 sm:h-64 overflow-hidden border-b-4 border-black bg-[#e3dac9] group flex items-center justify-center paper-texture shrink-0">
           <div className="absolute inset-0 opacity-10 mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none z-0"></div>
           
           <div className="w-full h-full p-8 animate-fade-in ink-filter z-10">
@@ -681,25 +688,25 @@ const App = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-[#f0e6d2] via-transparent to-transparent opacity-100 z-20 pointer-events-none"></div>
         </div>
 
-        {/* Text & Content Area (Scrollable with fixed width) */}
-        <div className="flex-grow p-4 sm:p-6 flex flex-col relative custom-scroll w-full">
+        {/* Text & Content Area (Scrollable with hidden bar) */}
+        <div className="relative z-10 flex-grow p-4 sm:p-6 flex flex-col custom-scroll w-full overflow-y-auto no-scrollbar">
           <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-[#0a0a0a] opacity-60 pointer-events-none"></div>
           <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-[#0a0a0a] opacity-60 pointer-events-none"></div>
           <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-[#0a0a0a] opacity-60 pointer-events-none"></div>
           <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-[#0a0a0a] opacity-60 pointer-events-none"></div>
 
-          <div className="w-full text-[#0a0a0a] leading-relaxed font-medium pb-24">
+          <div className="w-full leading-relaxed font-medium pb-24">
             {gameState === 'title' ? (
               <div className="text-center py-4 animate-fade-in">
-                <h1 className="font-display text-4xl sm:text-5xl mb-4 text-[#0a0a0a] drop-shadow-sm leading-tight">運命の<br/>迷宮デパート</h1>
-                <p className="text-xs sm:text-sm italic font-semibold text-[#0a0a0a] opacity-90 mb-6">- THE DEPARTMENT STORE OF DESTINY -</p>
+                <h1 className="font-display text-4xl sm:text-5xl mb-4 drop-shadow-sm leading-tight">運命の<br/>迷宮デパート</h1>
+                <p className="text-xs sm:text-sm italic font-semibold opacity-90 mb-6">- THE DEPARTMENT STORE OF DESTINY -</p>
                 <div className="w-12 h-1 bg-[#0a0a0a] mx-auto mb-6"></div>
-                <div className="flex items-center justify-center gap-2 mb-2 text-sm text-[#0a0a0a] font-bold opacity-80">
+                <div className="flex items-center justify-center gap-2 mb-2 text-sm font-bold opacity-80">
                    <BookOpen size={16} /> <span>ようこそ、彷徨える魂よ。</span>
                 </div>
               </div>
             ) : (
-              <p className="whitespace-pre-wrap min-h-[160px] drop-shadow-sm text-[#0a0a0a] font-semibold text-base sm:text-lg break-words w-full">
+              <p className="whitespace-pre-wrap min-h-[160px] drop-shadow-sm font-semibold text-base sm:text-lg break-words w-full">
                 {text}
                 <span className="inline-block w-2 h-4 bg-[#0a0a0a] ml-1 animate-pulse align-middle"></span>
               </p>
@@ -708,14 +715,14 @@ const App = () => {
             {/* --- Profile Entry Form --- */}
             {gameState === 'intro' && !isTyping && (
                 <div className="mt-4 animate-fade-in-up w-full">
-                    <label className="block text-sm font-bold text-[#0a0a0a] mb-2 font-display">BIRTH DATE (魂の刻印)</label>
+                    <label className="block text-sm font-bold mb-2 font-display">BIRTH DATE (魂の刻印)</label>
                     <div className="relative w-full flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity" onClick={() => dateInputRef.current?.showPicker()}>
                       <input 
                         ref={dateInputRef}
                         type="date" 
                         value={birthDate}
                         onChange={(e) => setBirthDate(e.target.value)}
-                        className="w-full max-w-full p-3 bg-[#fffff0] border-2 border-[#0a0a0a] text-[#0a0a0a] font-mono text-lg text-center shadow-inner outline-none focus:ring-2 focus:ring-[#0a0a0a] rounded-sm appearance-none block cursor-pointer"
+                        className="w-full max-w-full p-3 bg-[#fffff0] border-2 border-[#0a0a0a] font-mono text-lg text-center shadow-inner outline-none focus:ring-2 focus:ring-[#0a0a0a] rounded-sm appearance-none block cursor-pointer"
                         style={{ fontSize: '16px' }} 
                       />
                       <Calendar 
@@ -732,7 +739,7 @@ const App = () => {
                 <div className="w-24 h-36 mx-auto bg-[#0a0a0a] text-white flex items-center justify-center rounded mb-2 shadow-lg border-2 border-[#f0e6d2]">
                   <Moon size={32} />
                 </div>
-                <h3 className="font-bold text-xl mt-2 border-b-2 border-[#0a0a0a] text-[#0a0a0a] inline-block pb-1">{tarotResult.name}</h3>
+                <h3 className="font-bold text-xl mt-2 border-b-2 border-[#0a0a0a] inline-block pb-1">{tarotResult.name}</h3>
               </div>
             )}
 
@@ -747,8 +754,8 @@ const App = () => {
           </div>
         </div>
 
-        {/* Buttons / Interaction Area (Fixed at bottom) */}
-        <div className="p-4 bg-[#0a0a0a] bg-opacity-5 backdrop-blur-sm border-t-4 border-double border-[#0a0a0a] shrink-0 z-20">
+        {/* Buttons / Interaction Area (Fixed at bottom relative to container) */}
+        <div className="relative z-20 p-4 bg-[#0a0a0a] bg-opacity-5 backdrop-blur-sm border-t-4 border-double border-[#0a0a0a] shrink-0">
           <div className="flex flex-col gap-2">
             
             {gameState === 'title' && (
@@ -771,7 +778,7 @@ const App = () => {
             )}
 
             {gameState === 'floor_select' && !isTyping && (
-              <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto pr-1 custom-scroll">
+              <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto pr-1 no-scrollbar">
                 {!visitedFloors.includes('tarot') && (
                     <button onClick={() => handleAction(() => goToFloor('tarot'))} className={btnClass}>
                       <Moon size={18} /> 3階：タロットの館
