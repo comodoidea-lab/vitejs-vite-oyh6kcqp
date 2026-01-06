@@ -1,20 +1,27 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- ▼▼▼ アプリ名とアイコンの設定 ▼▼▼ -->
+    <title>運命の迷宮</title>
+    <meta name="apple-mobile-web-app-title" content="運命の迷宮">
+    
+    <!-- アイコン（水晶玉のSVGを直接埋め込み） -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 style=%22background-color: black;%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
 
-    <!-- Tailwind CSS (デザインを整える魔法) -->
+    <!-- ▼▼▼ スマホ表示の最適化（ズーム防止・全画面化） ▼▼▼ -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#0a0a0a" />
+
+    <!-- デザイン用 -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <title>Fortune Labyrinth Dept.</title>
   </head>
-  <body>
-    <!-- ここにReactが描画されます -->
+  <body class="bg-neutral-900 overscroll-none">
     <div id="root"></div>
-
-    <!-- Reactの起動スクリプト -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
